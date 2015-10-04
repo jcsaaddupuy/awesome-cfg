@@ -12,6 +12,11 @@ local naughty = require("naughty")
 local menubar = require("menubar")
 
 vicious = require("vicious")
+require("revelation")
+revelation.config.tag_name="R"
+revelation.config.match.exact=function(c, rule)
+	return c.class ~= "Mate-panel"
+end
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -112,62 +117,6 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 -- }}}
 
 -- {{{ Wibox
- -- use widget({ type = "textbox" }) for awesome < 3.5
- separator = wibox.widget.textbox()
- -- use separator.text  = " :: " for awesome < 3.5
- separator:set_text(" :: ")
-
---  Network usage widget
--- Initialize widget, use widget({ type = "textbox" }) for awesome < 3.5
-netwidget = wibox.widget.textbox()
--- Register widget
-vicious.register(netwidget, vicious.widgets.net, '<span color="#CC9393">${wlp1s0 down_kb}</span> <span color="#7F9F7F">${wlp1s0 up_kb}</span>', 3)
-
--- CPU
--- Initialize widget
--- Initialize widget
-cpuwidget = wibox.widget.textbox()
--- Register widget
-vicious.register(cpuwidget, vicious.widgets.cpu, "$1% $2%")
-
--- {{{ Battery state
--- Initialize widget
-batwidget = awful.widget.progressbar()
-batwidget:set_width(8)
-batwidget:set_height(14)
-batwidget:set_vertical(true)
-batwidget:set_background_color("#000000")
-batwidget:set_border_color(nil)
-batwidget:set_color("#00bfff")
-
--- {{{ Battery state
--- Initialize widget
-vicious.register(batwidget, vicious.widgets.bat, "$2", 120, "BAT0")
-
-
-
--- Keyboard map indicator and changer
-kbdcfg = {}
-kbdcfg.cmd = "setxkbmap"
-kbdcfg.layout = { { "us", "" , "US" }, { "fr", "" , "FR" } } 
-kbdcfg.current = 2  -- us is our default layout
-kbdcfg.widget = wibox.widget.textbox()
-kbdcfg.widget:set_text(" " .. kbdcfg.layout[kbdcfg.current][3] .. " ")
-kbdcfg.switch = function ()
-  kbdcfg.current = kbdcfg.current % #(kbdcfg.layout) + 1
-  local t = kbdcfg.layout[kbdcfg.current]
-  kbdcfg.widget:set_text(" " .. t[3] .. " ")
-  os.execute( kbdcfg.cmd .. " " .. t[1] .. " " .. t[2] )
-end
-
- -- Mouse bindings
-kbdcfg.widget:buttons(
- awful.util.table.join(awful.button({ }, 1, function () kbdcfg.switch() end))
-)
-
-
--- Create a textclock widget
-mytextclock = awful.widget.textclock()
 
 -- Create a wibox for each screen and add it
 mywibox = {}
@@ -237,23 +186,17 @@ for s = 1, screen.count() do
     mytasklist[s] = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, mytasklist.buttons)
 
     -- Create the wibox
-    mywibox[s] = awful.wibox({ position = "top", screen = s })
+    mywibox[s] = awful.wibox({ position = "bottom", screen = s })
 
     -- Widgets that are aligned to the left
     local left_layout = wibox.layout.fixed.horizontal()
-    left_layout:add(mylauncher)
+    -- left_layout:add(mylauncher)
     left_layout:add(mytaglist[s])
     left_layout:add(mypromptbox[s])
 
     -- Widgets that are aligned to the right
     local right_layout = wibox.layout.fixed.horizontal()
-    if s == 1 then right_layout:add(wibox.widget.systray()) end
-    right_layout:add(netwidget)
-    right_layout:add(separator)
-    right_layout:add(cpuwidget)
-    right_layout:add(batwidget)
-    right_layout:add(mytextclock)
-    right_layout:add(kbdcfg.widget)
+    -- if s == 1 then right_layout:add(wibox.widget.systray()) end
     right_layout:add(mylayoutbox[s])
 
     -- Now bring it all together (with the tasklist in the middle)
@@ -279,6 +222,8 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "Left",   awful.tag.viewprev       ),
     awful.key({ modkey,           }, "Right",  awful.tag.viewnext       ),
     awful.key({ modkey,           }, "Escape", awful.tag.history.restore),
+
+    awful.key({ modkey            }, "e",      revelation               ),
 
     awful.key({ modkey,           }, "j",
         function ()
@@ -335,6 +280,7 @@ globalkeys = awful.util.table.join(
     -- Menubar
     --awful.key({ modkey }, "p", function() menubar.show() end)
     awful.key({modkey }, "p", function() awful.util.spawn( "dmenu_run" ) end)
+
 )
 
 clientkeys = awful.util.table.join(
@@ -431,6 +377,8 @@ awful.rules.rules = {
     -- Set Firefox to always map on tags number 2 of screen 1.
     -- { rule = { class = "Firefox" },
     --   properties = { tag = tags[1][2] } },
+    -- { rule = { class = "Mate-panel" },
+    --  properties = { floating = true } },
 }
 -- }}}
 
@@ -457,7 +405,7 @@ client.connect_signal("manage", function (c, startup)
         end
     end
 
-    local titlebars_enabled = false
+    local titlebars_enabled = true
     if titlebars_enabled and (c.type == "normal" or c.type == "dialog") then
         -- buttons for the titlebar
         local buttons = awful.util.table.join(
@@ -507,7 +455,4 @@ client.connect_signal("focus", function(c) c.border_color = beautiful.border_foc
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
 
-
-awful.util.spawn_with_shell("run_once nm-applet --sm-disable &")
-awful.util.spawn_with_shell("run_once xcompmgr &")
 
