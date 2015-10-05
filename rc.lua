@@ -364,17 +364,12 @@ awful.rules.rules = {
                      raise = true,
                      keys = clientkeys,
                      buttons = clientbuttons } },
-    { rule = { class = "MPlayer" },
-      properties = { floating = true } },
-    { rule = { class = "pinentry" },
-      properties = { floating = true } },
-    { rule = { class = "gimp" },
-      properties = { floating = true } },
-    -- Set Firefox to always map on tags number 2 of screen 1.
-    -- { rule = { class = "Firefox" },
-    --   properties = { tag = tags[1][2] } },
-    -- { rule = { class = "Mate-panel" },
-    --  properties = { floating = true } },
+    { rule = { class = "MPlayer" }, properties = { floating = true } },
+    { rule = { class = "pinentry" }, properties = { floating = true } },
+    { rule = { class = "gimp" }, properties = { floating = true } },
+    -- force mate-panel to be on at x=0,y=0
+    { rule = { name = "x-caja-desktop" }, properties = {floating = true}, callback = function(c) c.sticky=true end},
+    { rule = { class = "Mate-panel" }, properties = {floating = true}, callback = function(c) c:geometry({x=0, y=0, height=26}) end},
 }
 -- }}}
 
