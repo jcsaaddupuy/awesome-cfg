@@ -84,10 +84,16 @@ end
 -- {{{ Tags
 -- Define a tag table which hold all screen tags.
 tags = {}
+tagsnames={ 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+
 for s = 1, screen.count() do
     -- Each screen has its own tag table.
-    tags[s] = awful.tag({ 1, 2, 3, 4, 5, 6, 7, 8, 9 }, s, layouts[1])
+    -- tags[s] = awful.tag(tagsnames, s, layouts[1])
+    tags[s] = awful.tag(tagsnames, s, awful.layout.suit.magnifier)
 end
+
+
+
 -- }}}
 
 -- {{{ Menu
@@ -422,15 +428,14 @@ awful.rules.rules = {
                      raise = true,
                      keys = clientkeys,
                      buttons = clientbuttons } },
-    { rule = { class = "MPlayer" },
-      properties = { floating = true } },
-    { rule = { class = "pinentry" },
-      properties = { floating = true } },
-    { rule = { class = "gimp" },
-      properties = { floating = true } },
-    -- Set Firefox to always map on tags number 2 of screen 1.
-    -- { rule = { class = "Firefox" },
-    --   properties = { tag = tags[1][2] } },
+    { rule = { class = "MPlayer" }, properties = { floating = true } },
+    { rule = { class = "pinentry" }, properties = { floating = true } },
+    { rule = { class = "gimp" }, properties = { floating = true } },
+    -- force mate-panel to be on at x=0,y=0
+    { rule = { name = "x-caja-desktop" }, properties = {floating = true}, callback = function(c) c.sticky=true end},
+    { rule = { class = "Mate-panel" }, properties = {floating = true}, callback = function(c) c:geometry({x=0, y=0, height=26}) end},
+    { rule = { instance = "plugin-container" }, properties = { floating = true } },
+    { rule = { instance = "Plugin-container" }, properties = { floating = true } },
 }
 -- }}}
 
@@ -505,6 +510,16 @@ end)
 
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+
+
+
+tag.connect_signal("property::layout", function(t)
+    if (awful.layout.get(mouse.screen) == awful.layout.suit.magnifier) then
+        awful.tag.setmwfact(0.85)
+    else
+        awful.tag.setmwfact(0.50)
+    end 
+end)
 -- }}}
 
 
